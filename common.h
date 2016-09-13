@@ -6,12 +6,12 @@
 
 #ifndef SS_COMMON_H
 #define SS_COMMON_H
-
+#include <stdio.h>
 #include <poll.h>
 #include <stdbool.h>
 #include <time.h>
 #include <netinet/in.h>
-#include <openssl/evp.h>
+
 #include <sys/types.h>
 #include <sys/socket.h>
 
@@ -26,8 +26,7 @@
 #define TCP_CONNECT_TIMEOUT 15
 #define DEFAULT_MAX_CONNECTION 1024
 #define TEXT_BUF_SIZE (1024 * 8)
-#define CIPHER_BUF_SIZE (TEXT_BUF_SIZE + EVP_MAX_BLOCK_LENGTH + \
-			 EVP_MAX_IV_LENGTH)
+#define CIPHER_BUF_SIZE (TEXT_BUF_SIZE)
 #define MAX_DOMAIN_LEN 255
 #define MAX_PORT_STRING_LEN 5
 #define MAX_PWD_LEN 16
@@ -75,13 +74,13 @@ struct link {
 	int text_len;
 	int cipher_len;
 	int ss_header_len;
-	EVP_CIPHER_CTX *local_ctx;
-	EVP_CIPHER_CTX *server_ctx;
+	//EVP_CIPHER_CTX *local_ctx;
+	//EVP_CIPHER_CTX *server_ctx;
 	struct addrinfo *server;
 	void *text;
 	void *cipher;
-	char local_iv[EVP_MAX_IV_LENGTH];
-	char server_iv[EVP_MAX_IV_LENGTH];
+	//char local_iv[EVP_MAX_IV_LENGTH];
+	//char server_iv[EVP_MAX_IV_LENGTH];
 };
 
 #define SOCKS5_METHOD_NOT_REQUIRED 0x00

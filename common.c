@@ -15,8 +15,6 @@
 #include <time.h>
 #include <unistd.h>
 #include <arpa/inet.h>
-#include <openssl/evp.h>
-#include <openssl/bio.h>
 #include <sys/resource.h>
 #include <sys/stat.h>
 #include <sys/time.h>
@@ -41,7 +39,7 @@ static void usage_client(const char *name)
 	       "\t-u,--local_addr\t local Used address\n"
 	       "\t-b,--local_port\t local Binding port\n"
 	       "\t-k,--password\t your password\n"
-	       "\t-m,--method\t encryption algorithm(aes-*-cfb, bf-cfb, cast5-cfb, des-cfb, rc2-cfb, rc4, seed-cfb)\n"
+	       "\t-m,--method\t encryption algorithm(only support tea)\n"
 	       "\t-d,--daemon\t run as daemon\n"
 	       "\t-l,--log_level\t log level(0-7), default is LOG_NOTICE\n"
 	       "\t-h,--help\t print this help\n", name);
@@ -54,7 +52,7 @@ static void usage_server(const char *name)
 	       "\t-u,--local_addr\t local address\n"
 	       "\t-b,--local_port\t local port\n"
 	       "\t-k,--password\t your password\n"
-	       "\t-m,--method\t encryption algorithm\n"
+	       "\t-m,--method\t encryption algorithm(only support tea)\n"
 	       "\t-d,--daemon\t run as daemon\n"
 	       "\t-l,--log_level\t log level(0-7), default is LOG_NOTICE\n"
 	       "\t-h,--help\t print this help information\n", name);
@@ -300,7 +298,7 @@ void check_ss_option(int argc, char **argv, const char *type)
 void pr_data(FILE *fp, const char *name, char *data, int len)
 {
 	fprintf(fp, "%s:\n", name);
-	BIO_dump_fp(fp, (void *)data, len);
+	//BIO_dump_fp(fp, (void *)data, len);
 }
 
 void _pr_link(int level, struct link *ln)
@@ -571,16 +569,7 @@ struct link *create_link(int sockfd, const char *type)
 	if (ln->cipher == NULL)
 		goto err;
 
-	/* cipher to encrypt local data */
-	ln->local_ctx = EVP_CIPHER_CTX_new();
-	if (ln->local_ctx == NULL)
-		goto err;
-
-	/* cipher to decrypt server data */
-	ln->server_ctx = EVP_CIPHER_CTX_new();
-	if (ln->server_ctx == NULL)
-		goto err;
-
+		
 	ln->state |= LOCAL;
 
 	ln->local_sockfd = sockfd;
@@ -597,12 +586,6 @@ struct link *create_link(int sockfd, const char *type)
 
 	return ln;
 err:
-	if (ln->server_ctx)
-		EVP_CIPHER_CTX_free(ln->server_ctx);
-
-	if (ln->local_ctx)
-		EVP_CIPHER_CTX_free(ln->local_ctx);
-
 	if (ln->text)
 		free(ln->text);
 
@@ -638,12 +621,6 @@ static void free_link(struct link *ln)
 
 	if (ln->cipher)
 		free(ln->cipher);
-
-	if (ln->local_ctx)
-		EVP_CIPHER_CTX_free(ln->local_ctx);
-
-	if (ln->server_ctx)
-		EVP_CIPHER_CTX_free(ln->server_ctx);
 
 	if (ln)
 		free(ln);
